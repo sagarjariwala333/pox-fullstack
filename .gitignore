@@ -1,0 +1,9 @@
+*.pt
+*.zip
+venv
+.venv
+.env
+__pycache__
+.vscode
+dataset
+models

@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPOX Analysis | Clinical Skin Assessment</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #e0f2fe;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --neutral-900: #0f172a;
+            --neutral-700: #334155;
+            --neutral-500: #64748b;
+            --neutral-300: #cbd5e1;
+            --neutral-200: #e2e8f0;
+            --neutral-100: #f1f5f9;
+            --neutral-50: #f8fafc;
+            --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--neutral-100);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: var(--neutral-700);
+        }
+
+        .container {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 560px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--white);
+            padding: 24px 32px 20px;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo svg {
+            width: 22px;
+            height: 22px;
+            color: white;
+        }
+
+        .header h1 {
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--neutral-900);
+        }
+
+        .header p {
+            font-size: 13px;
+            color: var(--neutral-500);
+            margin-top: 2px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: var(--neutral-100);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--neutral-500);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn.active {
+            background: var(--white);
+            color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        .content {
+            padding: 28px 32px 32px;
+        }
+
+        .mode-section {
+            display: none;
+        }
+
+        .mode-section.active {
+            display: block;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--neutral-300);
+            border-radius: 12px;
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .upload-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--primary);
+        }
+
+        .upload-area h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--neutral-900);
+            margin-bottom: 4px;
+        }
+
+        .upload-area p {
+            font-size: 13px;
+            color: var(--neutral-500);
+        }
+
+        .selected-files {
+            margin-bottom: 20px;
+        }
+
+        .file-count {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--primary-light);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .file-count svg {
+            width: 18px;
+            height: 18px;
+            color: var(--primary);
+        }
+
+        .file-count span {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+
+        .file-list {
+            max-height: 150px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .file-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: var(--neutral-100);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--neutral-700);
+        }
+
+        .file-tag .remove {
+            cursor: pointer;
+            color: var(--neutral-500);
+            margin-left: 2px;
+        }
+
+        .file-tag .remove:hover {
+            color: var(--danger);
+        }
+
+        .preview-area {
+            display: none;
+        }
+
+        .preview-area.active {
+            display: block;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: wait;
+            transform: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--neutral-300);
+            color: var(--neutral-700);
+            margin-top: 10px;
+        }
+
+        .btn-outline:hover {
+            background: var(--neutral-100);
+        }
+
+        .result-area {
+            display: none;
+        }
+
+        .result-area.active {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .result-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .result-icon.positive {
+            background: #fef2f2;
+        }
+
+        .result-icon.positive svg {
+            color: var(--danger);
+        }
+
+        .result-icon.negative {
+            background: #ecfdf5;
+        }
+
+        .result-icon.negative svg {
+            color: var(--success);
+        }
+
+        .result-icon.warning {
+            background: #fffbeb;
+        }
+
+        .result-icon.warning svg {
+            color: var(--warning);
+        }
+
+        .result-title {
+            font-size: 13px;
+            color: var(--neutral-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-prediction {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--neutral-900);
+        }
+
+        .result-card {
+            background: var(--neutral-50);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .result-card h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--neutral-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .prob-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .prob-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .prob-label {
+            width: 90px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--neutral-700);
+            flex-shrink: 0;
+        }
+
+        .prob-bar-container {
+            flex: 1;
+            height: 6px;
+            background: var(--neutral-200);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .prob-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        .prob-bar-fill.high {
+            background: var(--primary);
+        }
+
+        .prob-bar-fill.medium {
+            background: var(--warning);
+        }
+
+        .prob-bar-fill.low {
+            background: var(--neutral-300);
+        }
+
+        .prob-percent {
+            width: 45px;
+            text-align: right;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--neutral-700);
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer {
+            padding: 16px 32px 24px;
+            text-align: center;
+            border-top: 1px solid var(--neutral-200);
+            background: var(--neutral-50);
+        }
+
+        .footer p {
+            font-size: 11px;
+            color: var(--neutral-500);
+            line-height: 1.6;
+        }
+
+        /* Bulk Results Styles */
+        .bulk-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .bulk-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--white);
+            border: 1px solid var(--neutral-200);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .bulk-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .bulk-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .bulk-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .bulk-filename {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--neutral-900);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bulk-prediction {
+            font-size: 12px;
+            color: var(--neutral-500);
+        }
+
+        .bulk-prediction strong {
+            color: var(--neutral-900);
+        }
+
+        .bulk-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .bulk-status.healthy {
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        .bulk-status.warning {
+            background: #fffbeb;
+            color: #d97706;
+        }
+
+        .bulk-status.danger {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--neutral-50);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--neutral-900);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--neutral-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card.danger .stat-value {
+            color: var(--danger);
+        }
+
+        .stat-card.warning .stat-value {
+            color: var(--warning);
+        }
+
+        .stat-card.success .stat-value {
+            color: var(--success);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            body {
+                padding: 0;
+            }
+            .header {
+                padding: 20px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="header-left">
+                    <div class="logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1>MPOX Analysis</h1>
+                        <p>Clinical Skin Assessment Tool</p>
+                    </div>
+                </div>
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="single">Single</button>
+                    <button class="mode-btn" data-mode="bulk">Bulk</button>
+                    <button class="mode-btn" data-mode="evaluate">Evaluate</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Single Image Mode -->
+            <div class="mode-section active" id="singleMode">
+                <div class="upload-section" id="uploadSection">
+                    <div class="upload-area">
+                        <input type="file" name="file" id="fileInput" accept="image/*">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3>Upload Skin Image</h3>
+                        <p>JPG, PNG up to 10MB</p>
+                    </div>
+                </div>
+
+                <div class="preview-area" id="previewSection">
+                    <img class="preview-image" id="imagePreview" src="" alt="Preview">
+                    <button class="btn btn-primary" id="analyzeBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        <span>Analyze Image</span>
+                    </button>
+                    <button class="btn btn-outline" id="resetBtn">Change Image</button>
+                </div>
+
+                <div class="result-area" id="resultSection">
+                    <div class="result-header">
+                        <div class="result-icon" id="resultIcon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="result-title">Diagnosis</div>
+                            <div class="result-prediction" id="predictionText">-</div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h4>Probability Distribution</h4>
+                        <div class="prob-list" id="probList"></div>
+                    </div>
+
+                    <button class="btn btn-primary" id="newImageBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Analyze New Image</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bulk Image Mode -->
+            <div class="mode-section" id="bulkMode">
+                <div class="upload-section" id="bulkUploadSection">
+                    <div class="upload-area">
+                        <input type="file" name="files" id="bulkFileInput" accept="image/*" multiple>
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3>Upload Multiple Images</h3>
+                        <p>Select up to 20 images at once</p>
+                    </div>
+                    <div class="selected-files" id="selectedFiles" style="display: none;">
+                        <div class="file-count">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span id="fileCountText">0 files selected</span>
+                        </div>
+                        <div class="file-list" id="fileList"></div>
+                    </div>
+                    <button class="btn btn-primary" id="bulkAnalyzeBtn" style="display: none; margin-top: 16px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <span>Analyze All Images</span>
+                    </button>
+                </div>
+
+                <div class="result-area" id="bulkResultSection">
+                    <div class="summary-stats" id="summaryStats"></div>
+                    <div class="result-card">
+                        <h4>Analysis Results</h4>
+                        <div class="bulk-results" id="bulkResults"></div>
+                    </div>
+                    <button class="btn btn-primary" id="bulkNewBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Analyze New Batch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Evaluate Mode -->
+            <div class="mode-section" id="evaluateMode">
+                <div class="upload-section" id="evaluateUploadSection">
+                    <div class="upload-area">
+                        <input type="file" name="zipfile" id="zipFileInput" accept=".zip">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                        </div>
+                        <h3>Upload Test Dataset (ZIP)</h3>
+                        <p>ZIP file with folders as class labels</p>
+                    </div>
+                    <button class="btn btn-primary" id="evaluateBtn" style="display: none; margin-top: 16px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span>Evaluate Model</span>
+                    </button>
+                </div>
+
+                <div class="result-area" id="evaluateResultSection">
+                    <div class="summary-stats" id="evalSummaryStats"></div>
+                    <div class="result-card">
+                        <h4>Per-Class Accuracy</h4>
+                        <div class="prob-list" id="classAccuracyList"></div>
+                    </div>
+                    <div class="result-card">
+                        <h4>Detailed Results</h4>
+                        <div class="bulk-results" id="evalResults" style="max-height: 300px;"></div>
+                    </div>
+                    <button class="btn btn-primary" id="evalNewBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Evaluate New Dataset</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>This is an AI-assisted screening tool for educational purposes only.<br>Please consult a qualified healthcare professional for medical diagnosis.</p>
+        </div>
+    </div>
+
+    <script>
+        // Mode Toggle
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        const singleMode = document.getElementById('singleMode');
+        const bulkMode = document.getElementById('bulkMode');
+        const evaluateMode = document.getElementById('evaluateMode');
+
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const mode = btn.dataset.mode;
+                singleMode.classList.toggle('active', mode === 'single');
+                bulkMode.classList.toggle('active', mode === 'bulk');
+                evaluateMode.classList.toggle('active', mode === 'evaluate');
+            });
+        });
+
+        // Single Mode
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const previewSection = document.getElementById('previewSection');
+        const resultSection = document.getElementById('resultSection');
+        const imagePreview = document.getElementById('imagePreview');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const newImageBtn = document.getElementById('newImageBtn');
+        const predictionText = document.getElementById('predictionText');
+        const probList = document.getElementById('probList');
+        const resultIcon = document.getElementById('resultIcon');
+
+        let selectedFile = null;
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                uploadSection.style.display = 'none';
+                previewSection.classList.add('active');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<div class="spinner"></div><span>Analyzing...</span>';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/predict', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('Analysis failed');
+                const data = await response.json();
+                showResult(data);
+            } catch (err) {
+                alert('Error: ' + err.message);
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg><span>Analyze Image</span>';
+            }
+        });
+
+        function showResult(data) {
+            predictionText.textContent = data.label;
+            const lowerLabel = data.label.toLowerCase();
+            resultIcon.className = 'result-icon';
+            
+            if (lowerLabel === 'healthy') resultIcon.classList.add('negative');
+            else if (lowerLabel === 'monkeypox' || lowerLabel === 'cowpox') resultIcon.classList.add('positive');
+            else resultIcon.classList.add('warning');
+
+            const probs = Object.entries(data.probabilities).sort((a, b) => b[1] - a[1]);
+            let probHtml = '';
+            probs.forEach(([cls, prob]) => {
+                const percent = (prob * 100).toFixed(1);
+                let barClass = prob > 0.5 ? 'high' : prob > 0.15 ? 'medium' : 'low';
+                probHtml += `<div class="prob-row"><span class="prob-label">${cls}</span><div class="prob-bar-container"><div class="prob-bar-fill ${barClass}" style="width: ${percent}%"></div></div><span class="prob-percent">${percent}%</span></div>`;
+            });
+            probList.innerHTML = probHtml;
+
+            previewSection.classList.remove('active');
+            resultSection.classList.add('active');
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg><span>Analyze Image</span>';
+        }
+
+        function resetSingle() {
+            selectedFile = null;
+            fileInput.value = '';
+            uploadSection.style.display = 'block';
+            previewSection.classList.remove('active');
+            resultSection.classList.remove('active');
+        }
+
+        resetBtn.addEventListener('click', resetSingle);
+        newImageBtn.addEventListener('click', resetSingle);
+
+        // Bulk Mode
+        const bulkFileInput = document.getElementById('bulkFileInput');
+        const bulkUploadSection = document.getElementById('bulkUploadSection');
+        const selectedFilesDiv = document.getElementById('selectedFiles');
+        const fileList = document.getElementById('fileList');
+        const fileCountText = document.getElementById('fileCountText');
+        const bulkAnalyzeBtn = document.getElementById('bulkAnalyzeBtn');
+        const bulkResultSection = document.getElementById('bulkResultSection');
+        const bulkResults = document.getElementById('bulkResults');
+        const summaryStats = document.getElementById('summaryStats');
+        const bulkNewBtn = document.getElementById('bulkNewBtn');
+
+        let selectedFiles = [];
+
+        bulkFileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files).slice(0, 20);
+            selectedFiles = files;
+            fileCountText.textContent = `${files.length} file${files.length !== 1 ? 's' : ''} selected`;
+            selectedFilesDiv.style.display = files.length > 0 ? 'block' : 'none';
+            bulkAnalyzeBtn.style.display = files.length > 0 ? 'flex' : 'none';
+
+            fileList.innerHTML = files.map((f, i) => `
+                <span class="file-tag">
+                    ${f.name.substring(0, 20)}${f.name.length > 20 ? '...' : ''}
+                    <span class="remove" onclick="removeFile(${i})">&times;</span>
+                </span>
+            `).join('');
+        });
+
+        window.removeFile = function(index) {
+            selectedFiles.splice(index, 1);
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f));
+            bulkFileInput.files = dt.files;
+            fileCountText.textContent = `${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''} selected`;
+            selectedFilesDiv.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+            bulkAnalyzeBtn.style.display = selectedFiles.length > 0 ? 'flex' : 'none';
+            fileList.innerHTML = selectedFiles.map((f, i) => `
+                <span class="file-tag">
+                    ${f.name.substring(0, 20)}${f.name.length > 20 ? '...' : ''}
+                    <span class="remove" onclick="removeFile(${i})">&times;</span>
+                </span>
+            `).join('');
+        };
+
+        bulkAnalyzeBtn.addEventListener('click', async () => {
+            if (selectedFiles.length === 0) return;
+
+            bulkAnalyzeBtn.disabled = true;
+            bulkAnalyzeBtn.innerHTML = '<div class="spinner"></div><span>Analyzing...</span>';
+
+            const formData = new FormData();
+            selectedFiles.forEach(f => formData.append('files', f));
+
+            try {
+                const response = await fetch('/predict/bulk', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('Analysis failed');
+                const data = await response.json();
+                showBulkResults(data.results);
+            } catch (err) {
+                alert('Error: ' + err.message);
+                bulkAnalyzeBtn.disabled = false;
+                bulkAnalyzeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><span>Analyze All Images</span>';
+            }
+        });
+
+        function showBulkResults(results) {
+            let dangerCount = 0, warningCount = 0, healthyCount = 0;
+
+            results.forEach(r => {
+                const label = r.prediction.label.toLowerCase();
+                if (label === 'healthy') healthyCount++;
+                else if (label === 'monkeypox' || label === 'cowpox') dangerCount++;
+                else warningCount++;
+            });
+
+            summaryStats.innerHTML = `
+                <div class="stat-card danger"><div class="stat-value">${dangerCount}</div><div class="stat-label">Needs Attention</div></div>
+                <div class="stat-card warning"><div class="stat-value">${warningCount}</div><div class="stat-label">Other Conditions</div></div>
+                <div class="stat-card success"><div class="stat-value">${healthyCount}</div><div class="stat-label">Healthy</div></div>
+            `;
+
+            bulkResults.innerHTML = results.map((r, i) => {
+                const label = r.prediction.label.toLowerCase();
+                let statusClass = 'warning';
+                if (label === 'healthy') statusClass = 'healthy';
+                else if (label === 'monkeypox' || label === 'cowpox') statusClass = 'danger';
+
+                const conf = (Math.max(...Object.values(r.prediction.probabilities)) * 100).toFixed(1);
+
+                return `
+                    <div class="bulk-item">
+                        <img class="bulk-thumb" src="${URL.createObjectURL(selectedFiles[i])}" alt="Thumb">
+                        <div class="bulk-info">
+                            <div class="bulk-filename">${r.filename}</div>
+                            <div class="bulk-prediction">${r.prediction.label} <strong>(${conf}%)</strong></div>
+                        </div>
+                        <span class="bulk-status ${statusClass}">${r.prediction.label}</span>
+                    </div>
+                `;
+            }).join('');
+
+            bulkUploadSection.style.display = 'none';
+            bulkResultSection.classList.add('active');
+            bulkAnalyzeBtn.disabled = false;
+            bulkAnalyzeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><span>Analyze All Images</span>';
+        }
+
+        bulkNewBtn.addEventListener('click', () => {
+            selectedFiles = [];
+            bulkFileInput.value = '';
+            selectedFilesDiv.style.display = 'none';
+            bulkAnalyzeBtn.style.display = 'none';
+            bulkUploadSection.style.display = 'block';
+            bulkResultSection.classList.remove('active');
+        });
+
+        // Evaluate Mode
+        const zipFileInput = document.getElementById('zipFileInput');
+        const evaluateBtn = document.getElementById('evaluateBtn');
+        const evaluateUploadSection = document.getElementById('evaluateUploadSection');
+        const evaluateResultSection = document.getElementById('evaluateResultSection');
+        const evalSummaryStats = document.getElementById('evalSummaryStats');
+        const classAccuracyList = document.getElementById('classAccuracyList');
+        const evalResults = document.getElementById('evalResults');
+        const evalNewBtn = document.getElementById('evalNewBtn');
+
+        let selectedZipFile = null;
+
+        zipFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedZipFile = e.target.files[0];
+                evaluateBtn.style.display = 'flex';
+            }
+        });
+
+        evaluateBtn.addEventListener('click', async () => {
+            if (!selectedZipFile) return;
+
+            evaluateBtn.disabled = true;
+            evaluateBtn.innerHTML = '<div class="spinner"></div><span>Evaluating...</span>';
+
+            const formData = new FormData();
+            formData.append('file', selectedZipFile);
+
+            try {
+                const response = await fetch('/predict/evaluate', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('Evaluation failed');
+                const data = await response.json();
+                showEvalResults(data);
+            } catch (err) {
+                alert('Error: ' + err.message);
+                evaluateBtn.disabled = false;
+                evaluateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg><span>Evaluate Model</span>';
+            }
+        });
+
+        function showEvalResults(data) {
+            const overallAcc = data.accuracy;
+            let accClass = 'success';
+            if (overallAcc < 60) accClass = 'danger';
+            else if (overallAcc < 80) accClass = 'warning';
+
+            evalSummaryStats.innerHTML = `
+                <div class="stat-card"><div class="stat-value">${data.total_images}</div><div class="stat-label">Total Images</div></div>
+                <div class="stat-card"><div class="stat-value">${data.correct}</div><div class="stat-label">Correct</div></div>
+                <div class="stat-card ${accClass}"><div class="stat-value">${overallAcc}%</div><div class="stat-label">Accuracy</div></div>
+            `;
+
+            let classHtml = '';
+            for (const [cls, acc] of Object.entries(data.per_class_accuracy)) {
+                const percent = acc.toFixed(1);
+                let barClass = acc > 70 ? 'high' : acc > 50 ? 'medium' : 'low';
+                classHtml += `<div class="prob-row"><span class="prob-label">${cls}</span><div class="prob-bar-container"><div class="prob-bar-fill ${barClass}" style="width: ${percent}%"></div></div><span class="prob-percent">${percent}%</span></div>`;
+            }
+            classAccuracyList.innerHTML = classHtml;
+
+            const incorrectResults = data.results.filter(r => !r.correct);
+            evalResults.innerHTML = incorrectResults.length > 0 ? incorrectResults.map(r => `
+                <div class="bulk-item">
+                    <div class="bulk-info">
+                        <div class="bulk-filename">${r.filename}</div>
+                        <div class="bulk-prediction">True: <strong>${r.true_label}</strong> | Pred: <strong>${r.predicted_label}</strong></div>
+                    </div>
+                    <span class="bulk-status danger">Incorrect</span>
+                </div>
+            `).join('') : '<p style="text-align:center;color:var(--success);padding:20px;">All predictions correct!</p>';
+
+            evaluateUploadSection.style.display = 'none';
+            evaluateResultSection.classList.add('active');
+            evaluateBtn.disabled = false;
+            evaluateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg><span>Evaluate Model</span>';
+        }
+
+        evalNewBtn.addEventListener('click', () => {
+            selectedZipFile = null;
+            zipFileInput.value = '';
+            evaluateBtn.style.display = 'none';
+            evaluateUploadSection.style.display = 'block';
+            evaluateResultSection.classList.remove('active');
+        });
+    </script>
+</body>
+</html>

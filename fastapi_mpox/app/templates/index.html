@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MpoxNet Inference</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>MpoxNet Skin Disease Detection</h1>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" name="file" id="file-input" accept="image/*" required />
+            <button type="submit">Predict</button>
+        </form>
+        <div id="result" class="hidden">
+            <h2>Prediction</h2>
+            <p id="label"></p>
+            <div id="probabilities"></div>
+        </div>
+    </div>
+    <script>
+        const form = document.getElementById('upload-form');
+        const resultDiv = document.getElementById('result');
+        const labelP = document.getElementById('label');
+        const probsDiv = document.getElementById('probabilities');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('file-input');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            const resp = await fetch('/predict', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await resp.json();
+            labelP.textContent = `Label: ${data.label}`;
+            probsDiv.innerHTML = '';
+            for (const [cls, prob] of Object.entries(data.probabilities)) {
+                const bar = document.createElement('div');
+                bar.className = 'prob-bar';
+                bar.innerHTML = `<span>${cls}</span><div class="bar" style="width:${prob * 100}%"></div><span>${(prob*100).toFixed(1)}%</span>`;
+                probsDiv.appendChild(bar);
+            }
+            resultDiv.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>

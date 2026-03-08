@@ -1,0 +1,65 @@
+/* Premium dark theme with glassmorphism */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, hsl(220, 30%, 12%), hsl(260, 25%, 8%));
+    color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.container {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    text-align: center;
+}
+h1 {
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    color: #fff;
+}
+input[type="file"] {
+    margin: 1rem 0;
+    color: #fff;
+}
+button {
+    background: hsl(260, 70%, 55%);
+    border: none;
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+button:hover {
+    background: hsl(260, 70%, 65%);
+}
+#result {
+    margin-top: 1.5rem;
+    text-align: left;
+}
+.prob-bar {
+    display: flex;
+    align-items: center;
+    margin: 0.4rem 0;
+    font-size: 0.9rem;
+    color: #ddd;
+}
+.prob-bar span:first-child {
+    width: 80px;
+}
+.prob-bar .bar {
+    flex-grow: 1;
+    height: 8px;
+    background: hsl(260, 70%, 55%);
+    margin: 0 0.5rem;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+.hidden { display: none; }

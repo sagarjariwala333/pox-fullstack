@@ -575,6 +575,66 @@
             color: var(--success);
         }
 
+        .cm-container {
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        .confusion-matrix {
+            border-collapse: collapse;
+            font-size: 12px;
+            margin: 0 auto;
+        }
+
+        .confusion-matrix th, .confusion-matrix td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid var(--neutral-300);
+        }
+
+        .confusion-matrix th {
+            background: var(--neutral-100);
+            font-weight: 600;
+            color: var(--neutral-700);
+        }
+
+        .confusion-matrix td {
+            min-width: 50px;
+        }
+
+        .cm-cell {
+            font-weight: 600;
+        }
+
+        .cm-cell.highlight {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .f1-scores {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .f1-chip {
+            padding: 4px 10px;
+            background: var(--neutral-100);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .f1-chip .label {
+            color: var(--neutral-500);
+        }
+
+        .f1-chip .value {
+            color: var(--neutral-900);
+            font-weight: 700;
+        }
+
         @media (max-width: 600px) {
             .container {
                 border-radius: 0;
@@ -740,6 +800,16 @@
 
                 <div class="result-area" id="evaluateResultSection">
                     <div class="summary-stats" id="evalSummaryStats"></div>
+                    <div class="result-card">
+                        <h4>F1 Scores</h4>
+                        <div id="f1Scores"></div>
+                    </div>
+                    <div class="result-card">
+                        <h4>Confusion Matrix</h4>
+                        <div class="cm-container">
+                            <table class="confusion-matrix" id="confusionMatrix"></table>
+                        </div>
+                    </div>
                     <div class="result-card">
                         <h4>Per-Class Accuracy</h4>
                         <div class="prob-list" id="classAccuracyList"></div>
@@ -1037,6 +1107,32 @@
                 <div class="stat-card"><div class="stat-value">${data.correct}</div><div class="stat-label">Correct</div></div>
                 <div class="stat-card ${accClass}"><div class="stat-value">${overallAcc}%</div><div class="stat-label">Accuracy</div></div>
             `;
+
+            const f1Scores = document.getElementById('f1Scores');
+            f1Scores.innerHTML = `
+                <div class="f1-scores">
+                    <div class="f1-chip"><span class="label">Macro:</span> <span class="value">${(data.f1_score_macro * 100).toFixed(1)}%</span></div>
+                    <div class="f1-chip"><span class="label">Weighted:</span> <span class="value">${(data.f1_score_weighted * 100).toFixed(1)}%</span></div>
+                    ${Object.entries(data.f1_score_per_class).map(([cls, score]) => `
+                        <div class="f1-chip"><span class="label">${cls}:</span> <span class="value">${(score * 100).toFixed(1)}%</span></div>
+                    `).join('')}
+                </div>
+            `;
+
+            const cmTable = document.getElementById('confusionMatrix');
+            const labels = data.confusion_matrix_labels;
+            const cm = data.confusion_matrix;
+            let cmHtml = '<tr><th></th>' + labels.map(l => `<th>${l}</th>`).join('') + '</tr>';
+            for (let i = 0; i < labels.length; i++) {
+                cmHtml += '<tr>';
+                cmHtml += `<th>${labels[i]}</th>`;
+                for (let j = 0; j < labels.length; j++) {
+                    const isDiagonal = i === j;
+                    cmHtml += `<td class="cm-cell ${isDiagonal ? 'highlight' : ''}">${cm[i][j]}</td>`;
+                }
+                cmHtml += '</tr>';
+            }
+            cmTable.innerHTML = cmHtml;
 
             let classHtml = '';
             for (const [cls, acc] of Object.entries(data.per_class_accuracy)) {

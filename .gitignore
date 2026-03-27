@@ -7,3 +7,8 @@ __pycache__
 .vscode
 dataset
 models
+dataset-1
+*.jpg
+*.png
+*.jpeg
+dataset-1/

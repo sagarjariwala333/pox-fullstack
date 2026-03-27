@@ -8,7 +8,6 @@ import zipfile
 import io
 import os
 from collections import defaultdict
-from sklearn.metrics import confusion_matrix, f1_score
 from .inference import predict
 from .schemas import PredictionResponse
 
@@ -53,8 +52,6 @@ async def evaluate_zip(file: UploadFile = File(...)):
     VALID_CLASSES = ["Monkeypox", "Chickenpox", "Measles", "Cowpox", "HFMD", "Healthy"]
     
     results = []
-    true_labels = []
-    pred_labels = []
     correct = 0
     total = 0
     per_class = defaultdict(lambda: {"correct": 0, "total": 0})
@@ -112,8 +109,6 @@ async def evaluate_zip(file: UploadFile = File(...)):
                 
                 total += 1
                 per_class[true_label]["total"] += 1
-                true_labels.append(true_label)
-                pred_labels.append(predicted_label)
                 
                 is_correct = true_label.lower() == predicted_label.lower()
                 if is_correct:
@@ -147,19 +142,11 @@ async def evaluate_zip(file: UploadFile = File(...)):
         for cls, data in per_class.items()
     }
     
-    cm = confusion_matrix(true_labels, pred_labels, labels=VALID_CLASSES)
-    f1_macro = f1_score(true_labels, pred_labels, labels=VALID_CLASSES, average='macro', zero_division=0)
-    f1_weighted = f1_score(true_labels, pred_labels, labels=VALID_CLASSES, average='weighted', zero_division=0)
-    f1_per_class = f1_score(true_labels, pred_labels, labels=VALID_CLASSES, average=None, zero_division=0)
-    f1_scores = {cls: round(score, 4) for cls, score in zip(VALID_CLASSES, f1_per_class)}
-    
     print("=" * 50)
     print(f"Evaluation Complete!")
     print(f"Total Images: {total}")
     print(f"Correct: {correct}")
     print(f"Overall Accuracy: {accuracy:.2f}%")
-    print(f"F1 Score (Macro): {f1_macro:.4f}")
-    print(f"F1 Score (Weighted): {f1_weighted:.4f}")
     print("Per-class Accuracy:")
     for cls, acc in class_accuracy.items():
         print(f"  - {cls}: {per_class[cls]['correct']}/{per_class[cls]['total']} = {acc:.2f}%")
@@ -170,11 +157,6 @@ async def evaluate_zip(file: UploadFile = File(...)):
         "correct": correct,
         "accuracy": round(accuracy, 2),
         "per_class_accuracy": class_accuracy,
-        "confusion_matrix": cm.tolist(),
-        "confusion_matrix_labels": VALID_CLASSES,
-        "f1_score_macro": round(f1_macro, 4),
-        "f1_score_weighted": round(f1_weighted, 4),
-        "f1_score_per_class": f1_scores,
         "results": results
     }
 

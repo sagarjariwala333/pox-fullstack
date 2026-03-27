@@ -4,8 +4,10 @@ import torch.nn as nn
 from torchvision import transforms
 from PIL import Image
 import io
+import os
 
-MODEL_PATH = r"d:\\pox\\models\\mpoxnet_v_fold2.pt"
+MODELS_DIR = r"d:\pox\models"
+DEFAULT_MODEL = "mpoxnet_v_fold2.pt"
 
 class CrossAttentionGate(nn.Module):
     def __init__(self, dim: int = 1024, hidden: int = 256):
@@ -67,12 +69,37 @@ class MpoxNetV(nn.Module):
         return (logits, alpha, beta) if return_gate else logits
 
 
-checkpoint = torch.load(MODEL_PATH, map_location=torch.device('cpu'), weights_only=False)
-model = MpoxNetV(num_classes=checkpoint.get('num_classes', 6))
-model.load_state_dict(checkpoint['model_state_dict'])
-model.eval()
+_model_cache = {}
 
-# Define the same transforms used during training (placeholder – adjust as needed)
+def get_model(model_name: str):
+    """Retrieve model from cache or load it from disk."""
+    if model_name not in _model_cache:
+        model_path = os.path.join(MODELS_DIR, model_name)
+        if not os.path.exists(model_path):
+            # Fallback for unexpected paths
+            if not os.path.isabs(model_name):
+                 model_path = os.path.join(MODELS_DIR, model_name)
+            else:
+                 model_path = model_name
+                 
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model {model_name} not found at {model_path}")
+            
+        checkpoint = torch.load(model_path, map_location=torch.device('cpu'), weights_only=False)
+        m = MpoxNetV(num_classes=checkpoint.get('num_classes', 6))
+        m.load_state_dict(checkpoint['model_state_dict'])
+        m.eval()
+        _model_cache[model_name] = m
+    return _model_cache[model_name]
+
+# Load default model initially
+try:
+    default_model = get_model(DEFAULT_MODEL)
+except Exception as e:
+    print(f"Error loading default model: {e}")
+    default_model = None
+
+# Define the same transforms used during training
 preprocess = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -80,7 +107,6 @@ preprocess = transforms.Compose([
 ])
 
 # Class labels – order must match the model's output
-# CLASS_LABELS = ["Monkeypox", "Chickenpox", "Measles", "Cowpox", "HFMD", "Healthy"]
 CLASS_LABELS = [
     "Chickenpox",
     "Measles",
@@ -88,21 +114,28 @@ CLASS_LABELS = [
     "Normal"
 ]
 
-def predict(image_bytes: bytes) -> dict:
+def predict(image_bytes: bytes, model_name: str = None) -> dict:
     """Run inference on an image and return label and probabilities.
 
     Args:
         image_bytes: Raw image data (e.g., from uploaded file).
+        model_name: Optional name of the model to use.
     Returns:
         dict with keys: 'label' (str) and 'probabilities' (dict of class->prob).
     """
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     input_tensor = preprocess(image).unsqueeze(0)  # shape: [1, C, H, W]
+    
+    current_model = get_model(model_name) if model_name else default_model
+    if current_model is None:
+        raise RuntimeError("No model available for prediction")
+        
     with torch.no_grad():
-        outputs = model(input_tensor)
+        outputs = current_model(input_tensor)
         if isinstance(outputs, tuple):
             outputs = outputs[0]
         probs = torch.nn.functional.softmax(outputs, dim=1).squeeze(0).tolist()
+    
     prob_dict = {cls: round(p, 4) for cls, p in zip(CLASS_LABELS, probs)}
     predicted_label = CLASS_LABELS[probs.index(max(probs))]
     return {"label": predicted_label, "probabilities": prob_dict}

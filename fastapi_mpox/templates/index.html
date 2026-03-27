@@ -575,6 +575,49 @@
             color: var(--success);
         }
 
+        .model-selection {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .model-selection label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--neutral-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .model-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--neutral-300);
+            border-radius: 10px;
+            background: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            color: var(--neutral-900);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+        }
+
+        .model-select:hover {
+            border-color: var(--primary);
+        }
+
+        .model-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
         @media (max-width: 600px) {
             .container {
                 border-radius: 0;
@@ -720,6 +763,12 @@
             <!-- Evaluate Mode -->
             <div class="mode-section" id="evaluateMode">
                 <div class="upload-section" id="evaluateUploadSection">
+                    <div class="model-selection">
+                        <label for="evalModelSelect">Inference Model</label>
+                        <select id="evalModelSelect" class="model-select">
+                            <option value="">Loading models...</option>
+                        </select>
+                    </div>
                     <div class="upload-area">
                         <input type="file" name="zipfile" id="zipFileInput" accept=".zip">
                         <div class="upload-icon">
@@ -778,8 +827,30 @@
                 singleMode.classList.toggle('active', mode === 'single');
                 bulkMode.classList.toggle('active', mode === 'bulk');
                 evaluateMode.classList.toggle('active', mode === 'evaluate');
+                
+                if (mode === 'evaluate') {
+                    fetchModels();
+                }
             });
         });
+
+        async function fetchModels() {
+            const select = document.getElementById('evalModelSelect');
+            try {
+                const response = await fetch('/models');
+                const data = await response.json();
+                if (data.models && data.models.length > 0) {
+                    select.innerHTML = data.models.map(m => 
+                        `<option value="${m}" ${m.includes('fold2') ? 'selected' : ''}>${m}</option>`
+                    ).join('');
+                } else {
+                    select.innerHTML = '<option value="">No models found</option>';
+                }
+            } catch (err) {
+                console.error('Error fetching models:', err);
+                select.innerHTML = '<option value="">Error loading models</option>';
+            }
+        }
 
         // Single Mode
         const fileInput = document.getElementById('fileInput');
@@ -1013,6 +1084,11 @@
 
             const formData = new FormData();
             formData.append('file', selectedZipFile);
+            
+            const modelSelect = document.getElementById('evalModelSelect');
+            if (modelSelect && modelSelect.value) {
+                formData.append('model_name', modelSelect.value);
+            }
 
             try {
                 const response = await fetch('/predict/evaluate', { method: 'POST', body: formData });

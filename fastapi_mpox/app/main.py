@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -8,7 +8,7 @@ import zipfile
 import io
 import os
 from collections import defaultdict
-from .inference import predict
+from .inference import predict, MODELS_DIR
 from .schemas import PredictionResponse
 
 app = FastAPI()
@@ -17,22 +17,29 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/models")
+async def list_models():
+    if not os.path.exists(MODELS_DIR):
+        return {"models": []}
+    models = [f for f in os.listdir(MODELS_DIR) if f.endswith(('.pt', '.pth'))]
+    return {"models": sorted(models)}
+
 @app.post("/predict", response_model=PredictionResponse)
-async def predict_endpoint(file: UploadFile = File(...)):
+async def predict_endpoint(file: UploadFile = File(...), model_name: str = Form(None)):
     content = await file.read()
-    result = predict(content)
+    result = predict(content, model_name=model_name)
     return PredictionResponse(**result)
 
 @app.post("/predict/bulk")
-async def predict_bulk(files: list[UploadFile] = File(...)):
+async def predict_bulk(files: list[UploadFile] = File(...), model_name: str = Form(None)):
     results = []
     for file in files:
         content = await file.read()
-        result = predict(content)
+        result = predict(content, model_name=model_name)
         results.append({
             "filename": file.filename,
             "prediction": result
@@ -40,9 +47,9 @@ async def predict_bulk(files: list[UploadFile] = File(...)):
     return {"results": results}
 
 @app.post("/predict/evaluate")
-async def evaluate_zip(file: UploadFile = File(...)):
+async def evaluate_zip(file: UploadFile = File(...), model_name: str = Form(None)):
     print("=" * 50)
-    print("Starting ZIP evaluation...")
+    print(f"Starting ZIP evaluation with model: {model_name or 'Default'}...")
     print("=" * 50)
     
     content = await file.read()
@@ -69,12 +76,6 @@ async def evaluate_zip(file: UploadFile = File(...)):
         
         print(f"Found {len(all_files)} images to process")
         
-        # Debug: show folder structure
-        sample_files = all_files[:10]
-        print("Sample file paths (first 10):")
-        for f in sample_files:
-            print(f"  - {f}")
-        
         for i, name in enumerate(all_files):
             try:
                 # Get true label from folder name
@@ -83,29 +84,22 @@ async def evaluate_zip(file: UploadFile = File(...)):
                 # Find class folder - look for any part that matches our valid classes
                 true_label = None
                 for part in parts:
-                    # Normalize: lowercase, strip
                     part_normalized = part.strip()
-                    # Check if this part matches any valid class (case-insensitive)
                     for valid_cls in VALID_CLASSES:
                         if part_normalized.lower() == valid_cls.lower():
-                            true_label = valid_cls  # Use exact case from VALID_CLASSES
+                            true_label = valid_cls
                             break
                     if true_label:
                         break
                 
                 if true_label is None:
-                    print(f"Skipping (no valid label): {name}")
                     skipped += 1
                     continue
                 
-                print(f"Processing: {name} | True label: {true_label}")
-                
                 # Read and predict
                 img_content = zf.read(name)
-                pred = predict(img_content)
+                pred = predict(img_content, model_name=model_name)
                 predicted_label = pred['label']
-
-                print("Prediction....", predicted_label)
                 
                 total += 1
                 per_class[true_label]["total"] += 1
@@ -123,7 +117,6 @@ async def evaluate_zip(file: UploadFile = File(...)):
                     "probabilities": pred['probabilities']
                 })
                 
-                # Print progress every 10 images
                 if total % 10 == 0:
                     current_acc = (correct / total * 100)
                     print(f"Progress: {total}/{len(all_files)} | Current Accuracy: {current_acc:.2f}%")
@@ -133,24 +126,11 @@ async def evaluate_zip(file: UploadFile = File(...)):
                 skipped += 1
                 continue
     
-    if skipped > 0:
-        print(f"Skipped {skipped} files")
-    
     accuracy = (correct / total * 100) if total > 0 else 0
     class_accuracy = {
         cls: (data["correct"] / data["total"] * 100) if data["total"] > 0 else 0
         for cls, data in per_class.items()
     }
-    
-    print("=" * 50)
-    print(f"Evaluation Complete!")
-    print(f"Total Images: {total}")
-    print(f"Correct: {correct}")
-    print(f"Overall Accuracy: {accuracy:.2f}%")
-    print("Per-class Accuracy:")
-    for cls, acc in class_accuracy.items():
-        print(f"  - {cls}: {per_class[cls]['correct']}/{per_class[cls]['total']} = {acc:.2f}%")
-    print("=" * 50)
     
     return {
         "total_images": total,
@@ -159,6 +139,9 @@ async def evaluate_zip(file: UploadFile = File(...)):
         "per_class_accuracy": class_accuracy,
         "results": results
     }
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

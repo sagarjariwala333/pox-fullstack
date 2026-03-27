@@ -12,3 +12,8 @@ dataset-1
 *.png
 *.jpeg
 dataset-1/
+*.jpg
+*.png
+*.jpeg
+*.webp
+dataset-1

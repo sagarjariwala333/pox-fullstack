@@ -763,12 +763,7 @@
             <!-- Evaluate Mode -->
             <div class="mode-section" id="evaluateMode">
                 <div class="upload-section" id="evaluateUploadSection">
-                    <div class="model-selection">
-                        <label for="evalModelSelect">Inference Model</label>
-                        <select id="evalModelSelect" class="model-select">
-                            <option value="">Loading models...</option>
-                        </select>
-                    </div>
+
                     <div class="upload-area">
                         <input type="file" name="zipfile" id="zipFileInput" accept=".zip">
                         <div class="upload-icon">
@@ -828,29 +823,11 @@
                 bulkMode.classList.toggle('active', mode === 'bulk');
                 evaluateMode.classList.toggle('active', mode === 'evaluate');
                 
-                if (mode === 'evaluate') {
-                    fetchModels();
-                }
+
             });
         });
 
-        async function fetchModels() {
-            const select = document.getElementById('evalModelSelect');
-            try {
-                const response = await fetch('/models');
-                const data = await response.json();
-                if (data.models && data.models.length > 0) {
-                    select.innerHTML = data.models.map(m => 
-                        `<option value="${m}" ${m.includes('fold2') ? 'selected' : ''}>${m}</option>`
-                    ).join('');
-                } else {
-                    select.innerHTML = '<option value="">No models found</option>';
-                }
-            } catch (err) {
-                console.error('Error fetching models:', err);
-                select.innerHTML = '<option value="">Error loading models</option>';
-            }
-        }
+
 
         // Single Mode
         const fileInput = document.getElementById('fileInput');
@@ -1085,10 +1062,7 @@
             const formData = new FormData();
             formData.append('file', selectedZipFile);
             
-            const modelSelect = document.getElementById('evalModelSelect');
-            if (modelSelect && modelSelect.value) {
-                formData.append('model_name', modelSelect.value);
-            }
+
 
             try {
                 const response = await fetch('/predict/evaluate', { method: 'POST', body: formData });
